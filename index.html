@@ -7,6 +7,7 @@
 <body>
   <input type="button" id="compressBtn" value="Kompresuj" />
   <input type="button" id="compressStepBtn" value="Kompresuj krok po kroku" />
+  <input type="button" id="decompressBtn" value="Dekompresuj" onclick="decompress();" />
   <div style="clear"></div>
   <div style="float:left">
     <div>Do kompresji<span id="uncompressedSize"></span></div>
@@ -281,6 +282,13 @@
   <div>Bez kompresji <span id="logSize"></span></div>
   <textarea id="logData" cols="40" rows="20"></textarea>
 </div>
+<div style="float:left">
+  <div>
+    Po dekompresji:
+     <!-- <span id="compressedSize"></span> -->
+  </div>
+  <textarea id="decompressedData" cols="40" rows="20"></textarea>
+</div>
   <script src="scripts/jquery.min.js"></script>
   <script src="scripts/jquery-ui.min.js"></script>
   <script src="scripts/jquery.highlighttextarea.min.js"></script>
@@ -296,26 +304,10 @@
 
   // Used to read values represented by a user specified number of bits from
   // a 'bytestream' array.
-  function InStream(bytestream, bitcount) {
-    this.bytestream = bytestream;
-    this.bitcount = bitcount;
-    this.offset = 0;
+  function InStream(instream) {
+    this.stream = instream;
 
-    this.ReadBit = function() {
-      var tmp = this.bytestream[this.offset >>> 3] >> (this.offset & 7);
-      this.offset++;
-      return tmp & 1;
-    }
-
-    this.Read = function(numBits) {
-      if ((this.offset + numBits) > this.bitcount)
-      return null;
-
-      // Read LSB -> MSB
-      var val = 0;
-      for (var i = 0; i < numBits; ++i)
-      val |= this.ReadBit() << i;
-
+    this.Read = function(val) {
       return val;
     }
   }
@@ -376,6 +368,7 @@
                w = c;
              }
     	   }
+         output.Write(dict.Lookup(w));
     };
 
     // LZW compression algorithm. See http://en.wikipedia.org/wiki/LZW
@@ -383,15 +376,20 @@
       str = uncompressed;
       length = str.length;
       if (length == 0)
-      return output.stream;
+        return output.stream;
 
       dict = new this.CompressDictionary();
       w = "";
     };
 
     this.nextChar = function () {
-      if(pos>=length)
+      if(pos>length)
         return;
+      else if(pos==length)
+      {
+        output.Write(dict.Lookup(w));
+        pos++;
+      }
       c = str.charAt(pos);
       if (dict.Exists(w + c)) {
         w = w + c;
@@ -425,30 +423,73 @@
   function LZWDecompressor(instream) {
     this.input = instream;
 
-    this.decompress = function(data, bitcount) {
-      if (bitcount == 0)
-      return "";
+    this.DecompressDictionary = function()
+    {
+      this.revhashtable = new Array();
+      this.nextcode = 0;
 
-      var dict = new this.DecompressDictionary();
-      var numBits = dict.ValSizeInBits();
-
-      var k = this.input.Read(numBits);
-      var output = String.fromCharCode(k);
-      var w = output;
-      var entry = "";
-
-      while ((k = this.input.Read(numBits)) != null) {
-        if (k < dict.Size()) // is it in the dictionary?
-        entry = dict.LookupIndex(k); // Get corresponding string.
-        else
-        entry = w + w.charAt(0);
-
-        output += entry;
-        numBits = dict.Insert(w + entry.charAt(0));
-        w = entry;
+      // Populate table with all possible character codes.
+      for(var i = 0; i < 256; ++i)
+      {
+        this.revhashtable[this.nextcode++] = String.fromCharCode(i);
       }
 
-      return output;
+      this.numBits = 9;
+
+      this.Size = function()
+      {
+        return (this.nextcode);
+      }
+
+      this.Insert = function(str)
+      {
+        this.revhashtable[this.nextcode++] = str;
+
+        // How many bits are we currently using to represent values?
+        // Look ahead one value because the decompressor lags one iteration
+        // behind the compressor.
+        var log2 = Math.log(this.nextcode + 2)/Math.LN2;
+        this.numBits = Math.ceil(log2);
+        return this.numBits;
+      }
+
+      this.LookupIndex = function(idx)
+      {
+        return this.revhashtable[idx];
+      }
+
+    }
+
+    this.decompress = function() {
+      var compressed=this.input.stream;
+      var dict = new this.DecompressDictionary();
+      var w ="";
+      var entry = "";
+      var result=w;
+
+      w = String.fromCharCode(compressed[0]);
+      result = w;
+      for (i = 1; i < compressed.length; i++) {
+        k = compressed[i];
+        if (k < dict.Size()) {
+          entry = dict.LookupIndex(k);
+        } else {
+          if (k === dict.Size()) {
+            entry = w + w.charAt(0);
+          } else {
+            return null;
+          }
+        }
+
+        result += entry;
+
+        // Add w+entry[0] to the dictionary.
+        dict.Insert(w+entry.charAt(0));
+        //dictionary[dictSize++] = w + entry.charAt(0);
+
+        w = entry;
+      }
+      return result;
     };
 
   } // end of LZWDecompressor
@@ -503,22 +544,24 @@
       compressor.init(input);
       hasStarted=true;
     }
+      document.getElementById('logData').value += compressor.getCurrentChar();
       compressor.nextChar();
       var end = compressor.getCurrentPos();
       var start = end - compressor.getCurrentPhrase().length;
-      document.getElementById('logData').value += compressor.getCurrentChar();
       document.getElementById('compressedData').value = output.stream;
       var compressedDataArea = document.getElementById("uncompressedData");
       setSelection(compressedDataArea, start, end);
       document.getElementById('logSize').innerHTML=document.getElementById('logData').value.length*8;
       document.getElementById('compressedSize').innerHTML=output.stream.length*(Math.max(...output.stream)).toString(2).length;
+      console.log(output.stream);
   });
 
   function decompress(parameters) {
     // Initialise the decompressor
-    var instream = new InStream(output.bytestream, output.offset);
+    var instream = new InStream(output.stream);
     var decompressor = new LZWDecompressor(instream);
     var decomp = decompressor.decompress();
+    document.getElementById('decompressedData').value=decomp;
   }
 
   function offsetToRangeCharacterMove(el, offset) {
@@ -541,37 +584,6 @@
       }
       range.select();
     }
-  }
-
-  function stringToByteArray(str)
-  {
-    var bytes = [];
-    for (var i = 0; i < str.length; ++i)
-    {
-      var charCode = str.charCodeAt(i);
-      bytes.push(charCode);
-    }
-    return bytes;
-  }
-
-  function stringToBinary(input) {
-    var output='';
-    for (i=0; i < input.length; i++) {
-      output +=input[i].charCodeAt(0).toString(2) + " ";
-    }
-    return output;
-  }
-
-  function byteLength(str) {
-    // returns the byte length of an utf8 string
-    var s = str.length;
-    for (var i=str.length-1; i>=0; i--) {
-      var code = str.charCodeAt(i);
-      if (code > 0x7f && code <= 0x7ff) s++;
-      else if (code > 0x7ff && code <= 0xffff) s+=2;
-      if (code >= 0xDC00 && code <= 0xDFFF) i--; //trail surrogate
-    }
-    return s;
   }
 
   </script>
