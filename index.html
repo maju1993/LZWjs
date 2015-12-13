@@ -556,7 +556,9 @@
       compressor.nextChar();
       var end = compressor.getCurrentPos();
       var start = end - compressor.getCurrentPhrase().length;
-      document.getElementById('compressedData').value = output.stream;
+      var compressedDataArea=document.getElementById('compressedData');
+      compressedDataArea.value = output.stream;
+      compressedDataArea.scrollTop = compressedDataArea.scrollHeight;
       var uncompressedDataArea = document.getElementById("uncompressedData");
       uncompressedDataArea.scrollTop = uncompressedDataArea.scrollHeight;
       setSelection(uncompressedDataArea, start, end);
