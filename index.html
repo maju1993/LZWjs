@@ -9,8 +9,9 @@
   <input type="button" id="decompressBtn" value="Dekompresuj" onclick="decompress();" />
   <input type="button" id="resetBtn" value="Resetuj" onclick="location.reload();" />
   <br/>
-  <input type="button" id="compressStepBtn" value="Kompresuj krok po kroku automatycznie" onclick="autoCompress();" />
+  <input type="button" id="compressStepBtn" value="Kompresuj krok po kroku automatycznie" onclick="stop=false;autoCompress();" />
   <input type="range" id="sleep" min="10" max="1000" />
+  <input type="button" id="stopBtn" value="Zatrzymaj" onclick="stop=true;" />
   <div style="clear"></div>
   <div style="float:left">
     <div>Do kompresji<span id="uncompressedSize"></span></div>
@@ -617,11 +618,12 @@
   }
 
 
-  autoCompressIteration=0;
+  var autoCompressIteration=0;
+  var stop=false;
   function autoCompress () {           //  create a loop function
      setTimeout(function () {    //  call a 3s setTimeout when the loop is called
         $("#compressStepBtn").click();
-        if (autoCompressIteration < document.getElementById('uncompressedData').value.length) {            //  if the counter < 10, call the loop function
+        if (autoCompressIteration < document.getElementById('uncompressedData').value.length && !stop) {            //  if the counter < 10, call the loop function
            autoCompress();             //  ..  again which will trigger another
         }                        //  ..  setTimeout()
         autoCompressIteration++;
