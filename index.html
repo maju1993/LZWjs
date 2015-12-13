@@ -8,6 +8,10 @@
   <input type="button" id="compressBtn" value="Kompresuj" />
   <input type="button" id="compressStepBtn" value="Kompresuj krok po kroku" />
   <input type="button" id="decompressBtn" value="Dekompresuj" onclick="decompress();" />
+  <input type="button" id="resetBtn" value="Resetuj" onclick="location.reload();" />
+  <br/>
+  <input type="button" id="compressStepBtn" value="Kompresuj krok po kroku automatycznie" onclick="autoCompress();" />
+  <input type="range" id="sleep" min="10" max="1000" />
   <div style="clear"></div>
   <div style="float:left">
     <div>Do kompresji<span id="uncompressedSize"></span></div>
@@ -279,6 +283,13 @@
   <textarea id="compressedData" cols="30" rows="20" readonly="readOnly"></textarea>
 </div>
 <div style="float:left">
+  <div>
+    Słownik:
+     <!-- <span id="compressedSize"></span> -->
+  </div>
+  <textarea id="dictionaryData" cols="20" rows="20" readonly="readOnly"></textarea>
+</div>
+<div style="float:left">
   <div>Bez kompresji <span id="logSize"></span></div>
   <textarea id="logData" cols="30" rows="20" readonly="readOnly"></textarea>
 </div>
@@ -288,13 +299,6 @@
      <!-- <span id="compressedSize"></span> -->
   </div>
   <textarea id="decompressedData" cols="30" rows="20" readonly="readOnly"></textarea>
-</div>
-<div style="float:left">
-  <div>
-    Słownik:
-     <!-- <span id="compressedSize"></span> -->
-  </div>
-  <textarea id="dictionaryData" cols="20" rows="20" readonly="readOnly"></textarea>
 </div>
   <script src="scripts/jquery.min.js"></script>
   <script src="scripts/jquery-ui.min.js"></script>
@@ -596,6 +600,19 @@
     }
     textArea.scrollTop = textArea.scrollHeight;
   }
+
+
+  autoCompressIteration=0;
+  function autoCompress () {           //  create a loop function
+     setTimeout(function () {    //  call a 3s setTimeout when the loop is called
+        $("#compressStepBtn").click();
+        if (autoCompressIteration < document.getElementById('uncompressedData').value.length) {            //  if the counter < 10, call the loop function
+           autoCompress();             //  ..  again which will trigger another
+        }                        //  ..  setTimeout()
+        autoCompressIteration++;
+     }, $("#sleep").val())
+  }
+
 
   </script>
 </body>
