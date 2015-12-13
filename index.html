@@ -10,7 +10,7 @@
   <input type="button" id="resetBtn" value="Resetuj" onclick="location.reload();" />
   <br/>
   <input type="button" id="compressStepBtn" value="Kompresuj krok po kroku automatycznie" onclick="stop=false;autoCompress();" />
-  <input type="range" id="sleep" min="10" max="1000" />
+  <input type="range" id="sleep" min="1" max="100" />
   <input type="button" id="stopBtn" value="Zatrzymaj" onclick="stop=true;" />
   <div style="clear"></div>
   <div style="float:left">
@@ -627,7 +627,7 @@
            autoCompress();             //  ..  again which will trigger another
         }                        //  ..  setTimeout()
         autoCompressIteration++;
-     }, $("#sleep").val())
+     }, (1/$("#sleep").val())*1000 )
   }
 
 
