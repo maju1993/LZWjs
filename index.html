@@ -545,12 +545,15 @@
       document.getElementById('logData').value='';
       hasStarted=true;
     }
-      document.getElementById('logData').value += compressor.getCurrentChar();
+      var logDataArea=document.getElementById('logData');
+      logDataArea.value += compressor.getCurrentChar();
+      logDataArea.scrollTop = logDataArea.scrollHeight;
       compressor.nextChar();
       var end = compressor.getCurrentPos();
       var start = end - compressor.getCurrentPhrase().length;
       document.getElementById('compressedData').value = output.stream;
       var compressedDataArea = document.getElementById("uncompressedData");
+      compressedDataArea.scrollTop = compressedDataArea.scrollHeight;
       setSelection(compressedDataArea, start, end);
       document.getElementById('logSize').innerHTML=document.getElementById('logData').value.length*8;
       var longestBits=(Math.max(...output.stream)).toString(2).length;
@@ -587,6 +590,16 @@
       }
       range.select();
     }
+    var charsPerRow = el.cols;
+    // we need to know at which row our selection starts
+    var selectionRow = (start - (start % charsPerRow)) / charsPerRow;
+
+    // we need to scroll to this row but scrolls are in pixels,
+    // so we need to know a row's height, in pixels
+    var lineHeight = el.clientHeight / el.rows;
+
+    // scroll !!
+    el.scrollTop = lineHeight * selectionRow;
   }
 
   function printDictionary(){
