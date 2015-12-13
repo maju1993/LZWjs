@@ -11,7 +11,7 @@
   <div style="clear"></div>
   <div style="float:left">
     <div>Do kompresji<span id="uncompressedSize"></span></div>
-    <textarea id="uncompressedData" cols="40" rows="20">
+    <textarea id="uncompressedData" cols="30" rows="20">
     ACT I. SCENE 3.
     Rousillon. The COUNT'S palace
 
@@ -276,18 +276,25 @@
 </div>
 <div style="float:left">
   <div>Po kompresji <span id="compressedSize"></span></div>
-  <textarea id="compressedData" cols="40" rows="20" readonly="readOnly"></textarea>
+  <textarea id="compressedData" cols="30" rows="20" readonly="readOnly"></textarea>
 </div>
 <div style="float:left">
   <div>Bez kompresji <span id="logSize"></span></div>
-  <textarea id="logData" cols="40" rows="20" readonly="readOnly"></textarea>
+  <textarea id="logData" cols="30" rows="20" readonly="readOnly"></textarea>
 </div>
 <div style="float:left">
   <div>
     Po dekompresji:
      <!-- <span id="compressedSize"></span> -->
   </div>
-  <textarea id="decompressedData" cols="40" rows="20" readonly="readOnly"></textarea>
+  <textarea id="decompressedData" cols="30" rows="20" readonly="readOnly"></textarea>
+</div>
+<div style="float:left">
+  <div>
+    Słownik:
+     <!-- <span id="compressedSize"></span> -->
+  </div>
+  <textarea id="dictionaryData" cols="20" rows="20" readonly="readOnly"></textarea>
 </div>
   <script src="scripts/jquery.min.js"></script>
   <script src="scripts/jquery-ui.min.js"></script>
@@ -519,6 +526,7 @@
       var padding=Math.ceil(longestBits/8)*8;
       document.getElementById('compressedSize').innerHTML=output.stream.length*padding;
       hasStarted=false;
+      printDictionary();
   });
 
   compressStepBtn.addEventListener('click',function() {
@@ -544,6 +552,7 @@
       var longestBits=(Math.max(...output.stream)).toString(2).length;
       var padding=Math.ceil(longestBits/8)*8;
       document.getElementById('compressedSize').innerHTML=output.stream.length*padding;
+      printDictionary();
   });
 
   function decompress(parameters) {
@@ -574,6 +583,18 @@
       }
       range.select();
     }
+  }
+
+  function printDictionary(){
+    var textArea=document.getElementById('dictionaryData');
+    textArea.value='';
+    var table = compressor.getDictionary().hashtable;
+    for (var key in table) {
+      if (table.hasOwnProperty(key)) {
+        textArea.value += table[key] + ' : ' +key + '\n';
+      }
+    }
+    textArea.scrollTop = textArea.scrollHeight;
   }
 
   </script>
