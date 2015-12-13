@@ -276,18 +276,18 @@
 </div>
 <div style="float:left">
   <div>Po kompresji <span id="compressedSize"></span></div>
-  <textarea id="compressedData" cols="40" rows="20"></textarea>
+  <textarea id="compressedData" cols="40" rows="20" readonly="readOnly"></textarea>
 </div>
 <div style="float:left">
   <div>Bez kompresji <span id="logSize"></span></div>
-  <textarea id="logData" cols="40" rows="20"></textarea>
+  <textarea id="logData" cols="40" rows="20" readonly="readOnly"></textarea>
 </div>
 <div style="float:left">
   <div>
     Po dekompresji:
      <!-- <span id="compressedSize"></span> -->
   </div>
-  <textarea id="decompressedData" cols="40" rows="20"></textarea>
+  <textarea id="decompressedData" cols="40" rows="20" readonly="readOnly"></textarea>
 </div>
   <script src="scripts/jquery.min.js"></script>
   <script src="scripts/jquery-ui.min.js"></script>
@@ -515,22 +515,10 @@
       document.getElementById('compressedData').value = output.stream;
       var compressedDataArea = document.getElementById("uncompressedData");
       document.getElementById('logSize').innerHTML=document.getElementById('logData').value.length*8;
-      document.getElementById('compressedSize').innerHTML=output.stream.length*(Math.max(...output.stream)).toString(2).length;
-    // compressor.nextChar();
-    // console.log(compressor.getCurrentPhrase());
-    // var end = compressor.getCurrentPos();
-    // var start = end - compressor.getCurrentPhrase().length;
-    // document.getElementById('logData').value += compressor.getCurrentChar();
-    // document.getElementById('compressedData').value = output.stream;
-    // var compressedDataArea = document.getElementById("uncompressedData");
-    // setSelection(compressedDataArea, start, end);
-
-    //prevStart=start;
-    //prevEnd=end;
-    //setSelection(compressedDataArea, prevStart, prevEnd);
-    //console.log(start);
-    //console.log(compressor.getCurrentPhrase());
-    //setSelection(compressedDataArea, start, end);
+      var longestBits=(Math.max(...output.stream)).toString(2).length;
+      var padding=Math.ceil(longestBits/8)*8;
+      document.getElementById('compressedSize').innerHTML=output.stream.length*padding;
+      hasStarted=false;
   });
 
   compressStepBtn.addEventListener('click',function() {
@@ -542,6 +530,7 @@
       var uncpomressedData = uncpomressedDataTextArea.value;
       var input = uncpomressedData;
       compressor.init(input);
+      document.getElementById('logData').value='';
       hasStarted=true;
     }
       document.getElementById('logData').value += compressor.getCurrentChar();
@@ -552,8 +541,9 @@
       var compressedDataArea = document.getElementById("uncompressedData");
       setSelection(compressedDataArea, start, end);
       document.getElementById('logSize').innerHTML=document.getElementById('logData').value.length*8;
-      document.getElementById('compressedSize').innerHTML=output.stream.length*(Math.max(...output.stream)).toString(2).length;
-      console.log(output.stream);
+      var longestBits=(Math.max(...output.stream)).toString(2).length;
+      var padding=Math.ceil(longestBits/8)*8;
+      document.getElementById('compressedSize').innerHTML=output.stream.length*padding;
   });
 
   function decompress(parameters) {
