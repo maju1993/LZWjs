@@ -279,7 +279,7 @@
   </textarea>
 </div>
 <div style="float:left">
-  <div>Po kompresji <span id="compressedSize"></span></div>
+  <div>Po kompresji <span id="compressedSize"></span> (proprcja:<span id="ratio"></span> )</div>
   <textarea id="compressedData" cols="30" rows="20" readonly="readOnly"></textarea>
 </div>
 <div style="float:left">
@@ -527,10 +527,13 @@
       document.getElementById('logData').value = input;
       document.getElementById('compressedData').value = output.stream;
       var compressedDataArea = document.getElementById("uncompressedData");
-      document.getElementById('logSize').innerHTML=document.getElementById('logData').value.length*8;
+      var logSize=document.getElementById('logData').value.length*8;
+      document.getElementById('logSize').innerHTML=logSize;
       var longestBits=(Math.max(...output.stream)).toString(2).length;
       var padding=Math.ceil(longestBits/8)*8;
-      document.getElementById('compressedSize').innerHTML=output.stream.length*padding;
+      var compressedSize=output.stream.length*padding;
+      document.getElementById('compressedSize').innerHTML=compressedSize;
+      document.getElementById('ratio').innerHTML=(compressedSize/logSize).toFixed(2);
       hasStarted=false;
       printDictionary();
   });
@@ -557,12 +560,15 @@
       var uncompressedDataArea = document.getElementById("uncompressedData");
       uncompressedDataArea.scrollTop = uncompressedDataArea.scrollHeight;
       setSelection(uncompressedDataArea, start, end);
-      document.getElementById('logSize').innerHTML=document.getElementById('logData').value.length*8;
+      var logSize=document.getElementById('logData').value.length*8;
+      document.getElementById('logSize').innerHTML=logSize;
       var longestBits=(Math.max(...output.stream)).toString(2).length;
       var padding=Math.ceil(longestBits/8)*8;
-      document.getElementById('compressedSize').innerHTML=output.stream.length*padding;
+      var compressedSize=output.stream.length*padding;
+      document.getElementById('compressedSize').innerHTML=compressedSize;
+      document.getElementById('ratio').innerHTML=(compressedSize/logSize).toFixed(2);
       printDictionary();
-      myLineChart.addData([document.getElementById('logSize').innerHTML, document.getElementById('compressedSize').innerHTML], '');
+      myLineChart.addData([logSize, compressedSize], '');
   });
 
   function decompress(parameters) {
