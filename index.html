@@ -279,7 +279,7 @@
   </textarea>
 </div>
 <div style="float:left">
-  <div>Po kompresji <span id="compressedSize"></span> (proprcja:<span id="ratio"></span> )</div>
+  <div>Po kompresji <span id="compressedSize"></span> (stopień komp:<span id="ratio"></span> )</div>
   <textarea id="compressedData" cols="30" rows="20" readonly="readOnly"></textarea>
 </div>
 <div style="float:left">
@@ -342,7 +342,7 @@
       this.nextcode = 0;
 
       // Populate table with all possible character codes.
-      for (var i = 0; i < 256; ++i) {
+      for (var i = 0; i < 384; ++i) {
         var str = String.fromCharCode(i);
         this.hashtable[str] = this.nextcode++;
       }
@@ -442,7 +442,7 @@
       this.nextcode = 0;
 
       // Populate table with all possible character codes.
-      for(var i = 0; i < 256; ++i)
+      for(var i = 0; i < 384; ++i)
       {
         this.revhashtable[this.nextcode++] = String.fromCharCode(i);
       }
@@ -533,7 +533,7 @@
       var padding=Math.ceil(longestBits/8)*8;
       var compressedSize=output.stream.length*padding;
       document.getElementById('compressedSize').innerHTML=compressedSize;
-      document.getElementById('ratio').innerHTML=(compressedSize/logSize).toFixed(2);
+      document.getElementById('ratio').innerHTML=(logSize/compressedSize).toFixed(2);
       hasStarted=false;
       printDictionary();
   });
@@ -568,7 +568,7 @@
       var padding=Math.ceil(longestBits/8)*8;
       var compressedSize=output.stream.length*padding;
       document.getElementById('compressedSize').innerHTML=compressedSize;
-      document.getElementById('ratio').innerHTML=(compressedSize/logSize).toFixed(2);
+      document.getElementById('ratio').innerHTML=(logSize/compressedSize).toFixed(2);
       printDictionary();
       myLineChart.addData([logSize, compressedSize], '');
   });
